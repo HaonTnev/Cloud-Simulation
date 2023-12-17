@@ -1,6 +1,8 @@
 # Final Project
 
---> PLEASE PUT A SHORT DESCRIPTION AND YOUR NAME HERE <--
+Name: Noah Wendt 
+
+The attempt to simulate cloud formation & behaviour using unity engine, c# and glsl (unity shader language)
 
 
 ## Requirements
