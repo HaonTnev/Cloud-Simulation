@@ -1,0 +1,24 @@
+#pragma kernel CSMain
+
+struct Voxel
+{
+    float3 pos;
+    float4 col;
+};
+
+RWTexture2D<float4> Result;
+
+RWStructuredBuffer<int> voxels;
+float res;//Resolution
+
+[numthreads(8,8,1)]
+
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    float x = id.x/res;
+
+    Voxel voxel = voxels[id.x];
+    voxel.col= float4(0, x, 0, 0);
+
+    voxels[id.x] = voxel;
+}
