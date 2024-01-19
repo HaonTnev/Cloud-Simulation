@@ -45,6 +45,8 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\2022.3.11f1-x86_64\Editor\Data\Tools\Unity.SourceGenerators\Unity.Properties.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\CloudTexture.cs" />
+     <Compile Include="Assets\trying to undestand shades\ShaderSetup.cs" />
      <Compile Include="Assets\Cloud.cs" />
      <Compile Include="Assets\VoxelGrid.cs" />
      <Folder Include="Assets" />
@@ -54,6 +56,7 @@
      <None Include="Library\PackageCache\com.unity.ext.nunit@1.0.6\package.json" />
      <Folder Include="Library\PackageCache\com.unity.ide.rider@3.0.25\Rider" />
      <Folder Include="Library\PackageCache\com.unity.textmeshpro@3.0.6\Editor Resources" />
+     <Folder Include="Assets\trying to undestand shades" />
      <None Include="Library\PackageCache\com.unity.textmeshpro@3.0.6\package.json" />
      <Folder Include="Library\PackageCache\com.unity.visualscripting@1.9.1\Graphics" />
      <None Include="Library\PackageCache\com.unity.timeline@1.7.5\package.json" />
@@ -76,6 +79,8 @@
      <Folder Include="Library\PackageCache\com.unity.textmeshpro@3.0.6\Scripts" />
      <Folder Include="Library\PackageCache\com.unity.visualscripting@1.9.1\Runtime" />
      <Folder Include="Library\PackageCache\com.unity.testtools.codecoverage@1.2.4" />
+     <None Include="Assets\trying to undestand shades\VoxelShader.compute" />
+     <None Include="Assets\trying to undestand shades\learningShader.compute" />
      <None Include="Library\PackageCache\com.unity.performance.profile-analyzer@1.2.2\package.json" />
      <None Include="Library\PackageCache\com.unity.visualscripting@1.9.1\ValidationExceptions.json" />
      <Folder Include="Library\PackageCache\com.unity.settings-manager@2.0.1" />
@@ -85,6 +90,7 @@
      <Folder Include="Library\PackageCache\com.unity.performance.profile-analyzer@1.2.2\Tests" />
      <Folder Include="Library\PackageCache\com.unity.textmeshpro@3.0.6\Editor Resources\Gizmos" />
      <Folder Include="Library\PackageCache\com.unity.collab-proxy@2.2.0" />
+     <None Include="Assets\CloudVisuals.shader" />
      <None Include="Library\PackageCache\com.unity.testtools.codecoverage@1.2.4\package.json" />
      <Folder Include="Library\PackageCache\com.unity.textmeshpro@3.0.6" />
      <Folder Include="Library\PackageCache\com.unity.ide.rider@3.0.25" />
@@ -94,6 +100,7 @@
      <Folder Include="Library\PackageCache\com.unity.ide.vscode@1.2.5" />
      <Folder Include="Library\PackageCache\com.unity.textmeshpro@3.0.6\Tests" />
      <None Include="Library\PackageCache\com.unity.textmeshpro@3.0.6\Editor Resources\Shaders\TMP_Properties.cginc" />
+     <None Include="Assets\TextureShader.compute" />
      <None Include="Library\PackageCache\com.unity.textmeshpro@3.0.6\Editor Resources\Shaders\TMP_SDF Internal Editor.shader" />
      <Folder Include="Library\PackageCache\com.unity.collab-proxy@2.2.0\Lib" />
      <None Include="Library\PackageCache\com.unity.ide.vscode@1.2.5\ValidationExceptions.json" />

@@ -1,24 +1,104 @@
 #pragma kernel CSMain
 
-struct Voxel
+struct Cell
 {
     float3 pos;
+    int alive;
+    int aliveFor;
     float4 col;
 };
 
-RWTexture2D<float4> Result;
+shared RWStructuredBuffer<Cell> cells;
+shared RWStructuredBuffer<int> nextGen;
 
-RWStructuredBuffer<int> voxels;
-float res;//Resolution
+uint _xSize;
+uint _ySize;
+uint _zSize;
+uint _bufferLength;
+uint _pass = 0;
 
-[numthreads(8,8,1)]
+[numthreads( 8,  8,  8)]
 
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    float x = id.x/res;
+    
+    uint _ThreadGroupSizeX = _xSize/8;
+    uint _ThreadGroupSizeY = _ySize/8;
+    uint _ThreadGroupSizeZ = _zSize/8;
+    
+    // Calculate linear index in the buffer
+    uint index = id.x + id.y * _ThreadGroupSizeX + id.z * _ThreadGroupSizeX * _ThreadGroupSizeY;
 
-    Voxel voxel = voxels[id.x];
-    voxel.col= float4(0, x, 0, 0);
+    // Calculate 3D coordinates
+    uint x = id.x;
+    uint y = id.y;
+    uint z = id.z;
+    
+    Cell cell = cells[index];
+    cell.pos= float3(x,y,z);
+    uint numNeighbors = 0;
 
-    voxels[id.x] = voxel;
+    // Loop over neighboring cells in a 3x3x3 cube (including the current cell)
+    for (int i = -1; i <= 1; i++) {
+        for (int j = -1; j <= 1; j++) {
+            for (int k = -1; k <= 1; k++) {
+                // Exclude self in check
+                if(i == 0 && j == 0 && k == 0)
+                    continue;
+                
+                uint3 neighborCoords = uint3(x + i, y + j, z + k);
+                // Calculate linear index of the neighboring cell
+                uint neighborIndex = neighborCoords.x +
+                                     neighborCoords.y * _ThreadGroupSizeX +
+                                     neighborCoords.z * _ThreadGroupSizeX * _ThreadGroupSizeY;
+
+                // Check if the neighbor is within bounds
+                if (0 <= neighborIndex && neighborIndex < _bufferLength) {
+                    
+
+
+                    // Access the value of the neighboring cell
+                    if(cells[neighborIndex].alive == 1)
+                    {
+                       // Increment the counter if the neighbor is alive
+                       numNeighbors ++;
+                    }
+                }
+            }
+        }
+    }
+
+    // CA logic
+/*
+    if (cell.alive == 1  && (numNeighbors < 5 || numNeighbors > 6))
+    {
+        cell.alive = 0;
+    }
+    else if (cell.alive == 1 && (numNeighbors >= 4 && numNeighbors <= 7))
+    {
+        cell.alive = 1;
+    }
+    else if (cell.alive == 0 && (numNeighbors == 4 || numNeighbors == 5))
+    {
+        cell.alive = 0;
+    }*/
+    if (cell.alive == 1)
+    {
+        nextGen[index] = 0;
+    }
+    else
+    {
+        nextGen[index] = 1;
+    }
+    // Get some color based on index. greets from chat gbt
+
+    // Clamp the input value between 0 and 255 using lerp
+    float clampedValue = lerp(0.0, 1, saturate(index / _xSize));
+    cell.aliveFor= numNeighbors;
+    // Now 'clampedValue' is the input value clamped between 0 and 255
+    cell.col = float4(clampedValue, clampedValue, clampedValue, 0);
+    
+    //  cells[index].alive = nextGen[index];
+    cells[index] = cell;
+    _pass++;
 }

@@ -1,0 +1,33 @@
+#pragma kernel CSMain
+
+struct Cube
+{
+     float3 pos;
+     float4 col;
+
+};
+
+float3 volumeExtend;
+float voxelSize;
+
+RWStructuredBuffer<Cube> voxels;
+
+[numthreads(10,0,0)]
+
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    Cube cube= voxels[id.x];//Get Cube at pos id.x
+    //Do stuff with the cube
+    float x = id.x % volumeExtend.x;
+    float y = (id.x / volumeExtend.x) % volumeExtend.y;
+    float z = (id.x / (volumeExtend.x * volumeExtend.y));
+        
+    float3 position = float3(x, y, z);
+    cube.pos = position;
+    cube.col = float4(position,0);
+
+    voxels[id.x]=cube;//put the new values in the cube 
+}
+
+    
+
