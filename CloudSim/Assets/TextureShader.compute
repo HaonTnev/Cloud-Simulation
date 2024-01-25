@@ -10,23 +10,24 @@ RWTexture3D<float4> nextGen : register(u1);
  uint ySize;
  uint zSize;
 
+float4 aliveCol = float4(1,1,1,1);
+float4 deadCol = float4(0,0,0,1);
+
 [numthreads(8, 8, 8)]
 void CSMain (uint3 id : SV_DispatchThreadID, uint3 groupID : SV_GroupID)
 {
+  
 
     float xf = xSize;
     float yf = ySize;
     float zf = zSize;
     
-    tex[id.xyz] = float4(id.x/xf,id.y/yf,id.z/zf,1);
+ //   tex[id.xyz] = float4(id.x/xf,id.y/yf,id.z/zf,1); // display uv coordinates
 
     
+    
     uint numNeighbors = 0;
-    bool alive = false;
-    if (tex[id.xyz].x >.9f)
-    {
-        alive = true;
-    }
+
     // Loop over neighboring cells in a 3x3x3 cube (including the current cell)
     for (int i = -1; i <= 1; i++)
     {
@@ -38,7 +39,13 @@ void CSMain (uint3 id : SV_DispatchThreadID, uint3 groupID : SV_GroupID)
                 if(i == 0 && j == 0 && k == 0)
                     continue;
 
-                float3 neighbor = float3( id.x+i, id.y+j, id.z+k);
+                const uint3 neighbor = uint3( id.x+i, id.y+j, id.z+k);
+
+                // Check edge cases
+                if(tex[neighbor].x < 0 || tex[neighbor].x >= xSize - 1 || tex[neighbor].y < 0 || tex[neighbor].y >= ySize-1 || tex[neighbor].z < 0 || tex[neighbor].z >= zSize-1)
+                 continue;
+                
+
                 if(tex[neighbor].x > .8f)
                 {
                     numNeighbors++;
@@ -46,18 +53,37 @@ void CSMain (uint3 id : SV_DispatchThreadID, uint3 groupID : SV_GroupID)
             }
         }
     }
+   /*
+    * If site is not active (green chanel < .8) 
+    * & is humid (red chanel > .8)
+    * & has active neighbor (num neighbors > 0)
+    * Site becomes active
     
-    if (alive  && (numNeighbors < 5 || numNeighbors > 6))
+
+    if (tex[id].x > .8)
+    {
+        nextGen[id] = float4(numNeighbors/6,0,0,1); // Will be active nextGen
+    }
+    else
+    {
+        nextGen[id.xyz] = float4 (0,0,0,0);
+    }
+    */
+    
+
+    if (tex[id.xyz].x > .8 && (numNeighbors <= 4 || numNeighbors >= 7) )
+    {
+        nextGen[id.xyz] = float4(1.f,0,0,0);
+    }
+    else if (tex[id].x > .8 && (numNeighbors >= 4 && numNeighbors <= 7))
+    {
+        nextGen[id.xyz] = float4(0,0, 0,1);
+    }
+    else if (tex[id].x < .8 && (numNeighbors == 4 || numNeighbors == 5))
     {
         nextGen[id.xyz] = float4(0,0,0,1);
     }
-    else if (alive && (numNeighbors >= 4 && numNeighbors <= 7))
-    {
-        nextGen[id.xyz] = float4(1.f,0,0,1);
-    }
-    else if (!alive && (numNeighbors == 4 || numNeighbors == 5))
-    {
-        nextGen[id.xyz] = float4(1.f,0,0,1);
-    }
    // else nextGen[id.xyz] = float4(1, 0,.5f,.1f); // Debug col
+   // nextGen[id.xyz] = float4(id.x/xf,id.y/yf,id.z/zf,1);
+
 }

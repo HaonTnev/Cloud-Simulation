@@ -1,0 +1,37 @@
+#pragma kernel CSMain
+
+RWTexture3D<float4> tex : register(u0);
+RWTexture3D<float4> nextGen : register(u1);
+
+uint xSize;
+uint ySize;
+uint zSize;
+
+
+[numthreads(8,8,8)]
+void CSMain (uint3 id : SV_DispatchThreadID, uint3 groupID : SV_GroupID)
+{
+    
+    // Sets initial state of the simulation field. Will only ever get called once at start or to reset the sim
+    // Here we just care for "tex", because "nextGen" will be updated in "TextureShader". 
+
+    // Pseudorandom number generation. Just done by chatGBT tbh
+    float3 worldPos = id;
+    float pseudoRandom = frac(sin(dot(worldPos, float3(1.989, 8.233, 5.543))) * 43.5453);
+   
+    if (pseudoRandom<0.4)
+    {
+        tex[id.xyz] = float4(0, 0, 0, 0);
+    }
+    else
+    {
+        tex[id] = float4(1, 0, 0, 1);
+    }
+   // if (pseudoRandom < .99)
+    //{
+      //  tex[id] = float4(0 ,1.0, 0, 1.0); // We need some "Cloud Seeds" in the act field. Which is represented by the green channel. To be adjusted 
+    //} 
+
+    // tex[id.xyz] = float4(1.f, 0, 0, .5f);
+    // nextGen[id.xyz] = float4(pseudoRandom, 1, 1,.5f); 
+}
