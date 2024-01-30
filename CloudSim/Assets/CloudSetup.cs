@@ -29,6 +29,16 @@ public class CloudSetup : MonoBehaviour
 
     public bool vizualize = true; // Will be used to toggle the visualization eventually
 
+    private Vector3Int[] sixCellNeighberhood = //Predefined set off offsets to use in the getNeighbors function
+    {
+        new Vector3Int(1, 0, 0),
+        new Vector3Int(-1, 0, 0),
+        new Vector3Int(0, 1, 0),
+        new Vector3Int(0, -1, 0),
+        new Vector3Int(0, 0, 1),
+        new Vector3Int(0, 0, -1),
+
+    };
     [SerializeField] private Material mat;
 
     // Define Size of simulation space
@@ -68,16 +78,25 @@ public class CloudSetup : MonoBehaviour
             {
                 for (int z = 0; z < zSize; z++)
                 {
-                    var currentCell = cloudCells[x, y, z];
+                    CloudCell currentCell = cloudCells[x, y, z];
+                    CloudCell nextGenCell = new CloudCell();
                     var numNeighbors = GetNeighbours(new Vector3Int(x, y, z));
+                    
+                    
+                    
                     if (!currentCell.act && currentCell.hum && numNeighbors > 0)
                     {
-                        currentCell.act = true;
-                        currentCell.hum = false;
-                        currentCell.cld = false;
+                        nextGenCell.act = true;
+                        nextGenCell.hum = false;
+                        nextGenCell.cld = false;
+                    }else if (currentCell.act)
+                    {
+                        nextGenCell.cld = true;
                     }
 
-                    nextGenBuffer[x, y, z] = currentCell;
+
+
+                    nextGenBuffer[x, y, z] = nextGenCell;
                 }
             }
         }
@@ -117,28 +136,19 @@ public class CloudSetup : MonoBehaviour
     private int GetNeighbours(Vector3Int pos)
     {
         int num = 0 ;
-        for (int i = -1; i <= 1; i++)
+        foreach(Vector3Int offset in sixCellNeighberhood)
         {
-            for (int j = -1; j <= 1 ; j++)
+            Vector3Int toLook = new Vector3Int(pos.x+offset.x, pos.y+offset.y,pos.z+offset.z);
+            
+            if (toLook.x >= 0 && toLook.y >= 0 && toLook.z >= 0 && toLook.x <= xSize - 1 && toLook.y <= ySize - 1 && toLook.z <= zSize - 1) // check if you are out of bounds 
             {
-                for (int k = -1; k <= 1; k++)
-                {
-                    Vector3Int toLook = new Vector3Int(pos.x + i, pos.y + j, pos.z + k);
-                    
-                    if (i == 0 && j == 0 && k == 0)
-                        continue;
-
-                    if (toLook.x >= 0 && toLook.y >= 0 && toLook.z >= 0 && toLook.x <= xSize - 1 && toLook.y <= ySize - 1 && toLook.z <= zSize - 1) // check if you are out of bounds 
-                    {
                         
-                        if (cloudCells[toLook.x, toLook.y, toLook.z].act)
-                        {
-                            num++;
+                if (cloudCells[toLook.x, toLook.y, toLook.z].act)
+                {
+                    num++;
                                 
-                        }
- 
-                    }
                 }
+ 
             }
         }
         return num; 
