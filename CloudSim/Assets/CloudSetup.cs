@@ -52,23 +52,27 @@ public class CloudSetup : MonoBehaviour
     {
         print(xSize*ySize*zSize);
         InstantiateArrays();
-        cloudCells[0,0,0].act = true; // Cloud seed
-        foreach (var offset in sixCellNeighberhood)
-        {
-            Debug.Log(offset);
-        }
+        cloudCells[xSize/2, ySize/2, zSize/2].act = true; // Cloud seed
+        // foreach (var offset in sixCellNeighberhood)
+        // {
+        //     Debug.Log(offset);
+        // }
        
     }
 
     // Update is called once per frame
+
+    private int iteration = 0;
     void FixedUpdate()
     {
-        
         Automaton();
         UpdateToNextGen();
         VizualizeCloudCells();
         //Debug.Log("Updated");
-        
+        iteration++;
+        print(iteration);
+
+
     }
 
     private void UpdateToNextGen()
@@ -86,7 +90,7 @@ public class CloudSetup : MonoBehaviour
                 {
                     
                     var numNeighbors = GetNeighbours(new Vector3Int(x, y, z));
-                    print(numNeighbors);
+                   // print(numNeighbors);
                     if (cloudCells[x, y, z].act == false && cloudCells[x, y, z].hum == true && numNeighbors > 0) // update .act state
                     {
                         nextGenBuffer[x, y, z].hum = false;
@@ -122,20 +126,23 @@ public class CloudSetup : MonoBehaviour
                 {
                     GameObject cube = cubes[x, y, z];
                     MeshRenderer meshrenderer = cube.GetComponent<MeshRenderer>();
-                   
+                    cube.SetActive(false);
                     if (cloudCells[x,y,z].hum)
                     {
+                        cube.SetActive(false);
                         meshrenderer.material.color = Color.red;
                     }
                     else if(cloudCells[x,y,z].act) 
                     {
+                       cube.SetActive(true);
                         meshrenderer.material.color = Color.green;
                     }
                     else if(cloudCells[x,y,z].cld) 
                     {
+                        cube.SetActive(true);
                         meshrenderer.material.color = Color.blue;
                     }
-                    else cube.SetActive(false);
+                    
 
                     cube.GetComponent<MeshRenderer>().material.color = meshrenderer.material.color;    
                     cubes[x, y, z] = cube;
@@ -150,7 +157,7 @@ public class CloudSetup : MonoBehaviour
         {
             Vector3Int toLook = new Vector3Int(pos.x + offset.x, pos.y + offset.y,pos.z + offset.z);
             
-            if (toLook.x >= 0 && toLook.y >= 0 && toLook.z >= 0 && toLook.x <= xSize - 1 && toLook.y <= ySize - 1 && toLook.z <= zSize - 1) // check if you are out of bounds 
+            if (toLook.x >= 0 && toLook.y >= 0 && toLook.z >= 0 && toLook.x <= xSize - 1 && toLook.y <= ySize - 1 && toLook.z <= zSize - 1) // check if you are out of bounds
             {
                 if (cloudCells[toLook.x, toLook.y, toLook.z].act)
                 {
