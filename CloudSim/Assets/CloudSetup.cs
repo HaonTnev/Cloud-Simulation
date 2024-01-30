@@ -24,8 +24,12 @@ public class CloudSetup : MonoBehaviour
 {
     public CloudCell[ , , ] cloudCells;
     public CloudCell[ , , ] nextGenBuffer;
+
     public GameObject [ , , ] cubes; // Just for visualization
+
     public bool vizualize = true; // Will be used to toggle the visualization eventually
+
+    [SerializeField] private Material mat;
 
     // Define Size of simulation space
     public int xSize;
@@ -35,15 +39,110 @@ public class CloudSetup : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        print(xSize*ySize*zSize);
+        InstantiateArrays();
         
+        cloudCells[0,0,0].act = true; // Cloud seed
+        VizualizeCloudCells();
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
+        Automaton();
+        UpdateToNextGen();
+        VizualizeCloudCells();
         
     }
 
+    private void UpdateToNextGen()
+    {
+        cloudCells = nextGenBuffer;
+    }
+
+    private void Automaton()
+    {
+        for (int x = 0; x < xSize; x++)
+        {
+            for (int y = 0; y < ySize; y++)
+            {
+                for (int z = 0; z < zSize; z++)
+                {
+                    var currentCell = cloudCells[x, y, z];
+                    var numNeighbors = GetNeighbours(new Vector3Int(x, y, z));
+                    if (!currentCell.act && currentCell.hum && numNeighbors > 0)
+                    {
+                        currentCell.act = true;
+                        currentCell.hum = false;
+                        currentCell.cld = false;
+                    }
+
+                    nextGenBuffer[x, y, z] = currentCell;
+                }
+            }
+        }
+    }
+
+    private void VizualizeCloudCells()
+    {
+        for (int x = 0; x < xSize; x++)
+        {
+            for (int y = 0; y < ySize; y++)
+            {
+                for (int z = 0; z < zSize; z++)
+                {
+                    GameObject cube = cubes[x, y, z];
+                    MeshRenderer meshrenderer = cube.GetComponent<MeshRenderer>();
+
+                    if (cloudCells[x,y,z].hum)
+                    {
+                        meshrenderer.material.color = Color.red;
+                    }
+                    else if(cloudCells[x,y,z].act) 
+                    {
+                        meshrenderer.material.color = Color.green;
+                    }
+                    else if(cloudCells[x,y,z].cld) 
+                    {
+                        meshrenderer.material.color = Color.blue;
+                    }
+                    else cube.SetActive(false);
+
+                    cube.GetComponent<MeshRenderer>().material.color = meshrenderer.material.color;    
+                    cubes[x, y, z] = cube;
+                }
+            }
+        }
+    }
+    private int GetNeighbours(Vector3Int pos)
+    {
+        int num = 0 ;
+        for (int i = -1; i <= 1; i++)
+        {
+            for (int j = -1; j <= 1 ; j++)
+            {
+                for (int k = -1; k <= 1; k++)
+                {
+                    Vector3Int toLook = new Vector3Int(pos.x + i, pos.y + j, pos.z + k);
+                    
+                    if (i == 0 && j == 0 && k == 0)
+                        continue;
+
+                    if (toLook.x >= 0 && toLook.y >= 0 && toLook.z >= 0 && toLook.x <= xSize - 1 && toLook.y <= ySize - 1 && toLook.z <= zSize - 1) // check if you are out of bounds 
+                    {
+                        
+                        if (cloudCells[toLook.x, toLook.y, toLook.z].act)
+                        {
+                            num++;
+                                
+                        }
+ 
+                    }
+                }
+            }
+        }
+        return num; 
+    }
 
     
     private void InstantiateArrays()
@@ -82,6 +181,7 @@ public class CloudSetup : MonoBehaviour
             }
         }
     }
+    
     private GameObject MakeCube(int x, int y, int z)
     {
         GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -102,20 +202,20 @@ public class CloudSetup : MonoBehaviour
         meshRenderer.receiveShadows = false;
         meshRenderer.allowOcclusionWhenDynamic = false;
         
-        Material mat = new Material();
         meshRenderer.material = mat;
         
         mat.enableInstancing = true; 
         
         return cube;
     }
-        void OnDrawGizmos()
-        {
-            Handles.color=Color.red;
-            Vector3 bounds = new Vector3(xSize, ySize, zSize);
-            var objectpos = gameObject.transform.position;
-            Vector3 center = new Vector3(objectpos.x+(bounds.x/2),objectpos.y+(bounds.y/2), objectpos.z+(bounds.z/2));
-            Handles.DrawWireCube(center, bounds);
+    
+    void OnDrawGizmos()
+    {
+        Handles.color=Color.red;
+        Vector3 bounds = new Vector3(xSize, ySize, zSize);
+        var objectpos = gameObject.transform.position;
+        Vector3 center = new Vector3(objectpos.x+(bounds.x/2),objectpos.y+(bounds.y/2), objectpos.z+(bounds.z/2));
+        Handles.DrawWireCube(center, bounds);
             
-        }
+    }
 }

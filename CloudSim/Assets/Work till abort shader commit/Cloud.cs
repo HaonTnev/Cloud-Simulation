@@ -257,23 +257,12 @@ public class Cloud : MonoBehaviour
                         CellsBuffer[x,y,z] = true;
                         toLook.aliveFor++;
                     }
-
-                   // cellCube.GetComponent<Material>().color = new Color(2 * toLook.aliveFor, 0, 0, 0);
                 }
             }
         }
 
         // Update CloudCells with the next generation
-        for (int x = 0; x < xSize; x++)
-        {
-            for (int y = 0; y < ySize; y++)
-            {
-                for (int z = 0; z < zSize; z++)
-                {
-                    CloudCells[x, y, z].alive = CellsBuffer[x, y, z];
-                }
-            }
-        }
+
     }
     
     private int GetNeighbours(Cell cell, Vector3Int pos)
@@ -368,13 +357,14 @@ public class Cloud : MonoBehaviour
         
         return cube;
     }
-        void OnDrawGizmos()
-        {
-            Handles.color=Color.red;
-            Vector3 bounds = new Vector3(xSize, ySize, zSize);
-            var objectpos = gameObject.transform.position;
-            Vector3 center = new Vector3(objectpos.x+(bounds.x/2),objectpos.y+(bounds.y/2), objectpos.z+(bounds.z/2));
-            Handles.DrawWireCube(center, bounds);
+    
+    void OnDrawGizmos()
+    {
+        Handles.color=Color.red;
+        Vector3 bounds = new Vector3(xSize, ySize, zSize);
+        var objectpos = gameObject.transform.position;
+        Vector3 center = new Vector3(objectpos.x+(bounds.x/2),objectpos.y+(bounds.y/2), objectpos.z+(bounds.z/2));
+        Handles.DrawWireCube(center, bounds);
             
-        }
+    }
 }
