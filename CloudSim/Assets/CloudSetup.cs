@@ -1,3 +1,4 @@
+    using Unity.VisualScripting;
     using UnityEditor;
     using UnityEngine;
     using UnityEngine.Rendering;
@@ -51,17 +52,22 @@ public class CloudSetup : MonoBehaviour
     {
         print(xSize*ySize*zSize);
         InstantiateArrays();
-        
         cloudCells[0,0,0].act = true; // Cloud seed
-        VizualizeCloudCells();
+        foreach (var offset in sixCellNeighberhood)
+        {
+            Debug.Log(offset);
+        }
+       
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
+        
         Automaton();
         UpdateToNextGen();
         VizualizeCloudCells();
+        //Debug.Log("Updated");
         
     }
 
@@ -78,25 +84,29 @@ public class CloudSetup : MonoBehaviour
             {
                 for (int z = 0; z < zSize; z++)
                 {
-                    CloudCell currentCell = cloudCells[x, y, z];
-                    CloudCell nextGenCell = new CloudCell();
+                    
                     var numNeighbors = GetNeighbours(new Vector3Int(x, y, z));
-                    
-                    
-                    
-                    if (!currentCell.act && currentCell.hum && numNeighbors > 0)
+                    print(numNeighbors);
+                    if (cloudCells[x, y, z].act == false && cloudCells[x, y, z].hum == true && numNeighbors > 0) // update .act state
                     {
-                        nextGenCell.act = true;
-                        nextGenCell.hum = false;
-                        nextGenCell.cld = false;
-                    }else if (currentCell.act)
-                    {
-                        nextGenCell.cld = true;
+                        nextGenBuffer[x, y, z].hum = false;
+                        nextGenBuffer[x, y, z].act = true;
+                        nextGenBuffer[x, y, z].cld = false;
                     }
 
+                    else if (cloudCells[x, y, z].act == true || cloudCells[x, y, z].cld == true) // update .cld state
+                    {
+                        nextGenBuffer[x, y, z].hum = false;
+                        nextGenBuffer[x, y, z].act = false;
+                        nextGenBuffer[x, y, z].cld = true;
+                    }
 
-
-                    nextGenBuffer[x, y, z] = nextGenCell;
+                    else if (cloudCells[x, y, z].hum == true)
+                    {
+                        nextGenBuffer[x, y, z].hum = true;
+                        nextGenBuffer[x, y, z].act = false;
+                        nextGenBuffer[x, y, z].cld = false;
+                    }
                 }
             }
         }
@@ -112,7 +122,7 @@ public class CloudSetup : MonoBehaviour
                 {
                     GameObject cube = cubes[x, y, z];
                     MeshRenderer meshrenderer = cube.GetComponent<MeshRenderer>();
-
+                   
                     if (cloudCells[x,y,z].hum)
                     {
                         meshrenderer.material.color = Color.red;
@@ -138,22 +148,18 @@ public class CloudSetup : MonoBehaviour
         int num = 0 ;
         foreach(Vector3Int offset in sixCellNeighberhood)
         {
-            Vector3Int toLook = new Vector3Int(pos.x+offset.x, pos.y+offset.y,pos.z+offset.z);
+            Vector3Int toLook = new Vector3Int(pos.x + offset.x, pos.y + offset.y,pos.z + offset.z);
             
             if (toLook.x >= 0 && toLook.y >= 0 && toLook.z >= 0 && toLook.x <= xSize - 1 && toLook.y <= ySize - 1 && toLook.z <= zSize - 1) // check if you are out of bounds 
             {
-                        
                 if (cloudCells[toLook.x, toLook.y, toLook.z].act)
                 {
                     num++;
-                                
                 }
- 
             }
         }
         return num; 
     }
-
     
     private void InstantiateArrays()
     {

@@ -154,9 +154,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   vizualize: 1
   mat: {fileID: 2100000, guid: e1815a2e6d21330478077f008f34f059, type: 2}
-  xSize: 16
-  ySize: 16
-  zSize: 16
+  xSize: 10
+  ySize: 5
+  zSize: 10
 --- !u!4 &79908848
 Transform:
   m_ObjectHideFlags: 0
