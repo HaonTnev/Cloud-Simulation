@@ -2,6 +2,7 @@
     using UnityEditor;
     using UnityEngine;
     using UnityEngine.Rendering;
+    using UnityEngine.Serialization;
     using Random = UnityEngine.Random;
 
 /*
@@ -21,56 +22,93 @@ public bool cld;
 // no position vector needed. Position is defined by the 3D Array index.
 }
 
-public class CloudSetup : MonoBehaviour
-{
-    public CloudCell[ , , ] cloudCells;
-    public CloudCell[ , , ] nextGenBuffer;
-
-    public GameObject [ , , ] cubes; // Just for visualization
-
-    public bool vizualize = true; // Will be used to toggle the visualization eventually
-
-    private Vector3Int[] sixCellNeighberhood = //Predefined set off offsets to use in the getNeighbors function
+    public class CloudSetup : MonoBehaviour
     {
-        new Vector3Int(1, 0, 0),
-        new Vector3Int(-1, 0, 0),
-        new Vector3Int(0, 1, 0),
-        new Vector3Int(0, -1, 0),
-        new Vector3Int(0, 0, 1),
-        new Vector3Int(0, 0, -1),
+        public CloudCell[,,] cloudCells;
+        public CloudCell[,,] nextGenBuffer;
 
-    };
+        public GameObject[,,] cubes; // Just for visualization
+
+        public bool vizualize = true; // Will be used to toggle the visualization eventually
+
+        [SerializeField] public enum _SimulationMethod
+        { 
+            SixCell, 
+            SevenCell, 
+            TenCell
+        }
+
+        [FormerlySerializedAs("simulationMethodMethod")] public _SimulationMethod simulationMethod;
+        private Vector3Int[] sevenCellNeighborhood =
+        {
+            new Vector3Int(1, 0, 0),
+            new Vector3Int(-1, 0, 0),
+            new Vector3Int(0, 2, 0),
+            new Vector3Int(0, 1, 0),
+            new Vector3Int(0, -1, 0),
+            new Vector3Int(0, 0, 1),
+            new Vector3Int(0, 0, -1),
+        };
+
+        private Vector3Int[] sixCellNeighborhood = //Predefined set off offsets to use in the getNeighbors function
+        {
+            new Vector3Int(1, 0, 0),
+            new Vector3Int(-1, 0, 0),
+            new Vector3Int(0, 1, 0),
+            new Vector3Int(0, -1, 0),
+            new Vector3Int(0, 0, 1),
+            new Vector3Int(0, 0, -1),
+
+        };
+
+        private Vector3Int [] tenCellNeighborhood = {
+            new Vector3Int(1, 0, 0),
+            new Vector3Int(-1, 0, 0),
+            new Vector3Int(2, 0, 0),
+            new Vector3Int(-2, 0, 0),
+            new Vector3Int(0, 1, 0),
+            new Vector3Int(0, -1, 0),
+            new Vector3Int(0, 0, 1),
+            new Vector3Int(0, 0, -1),
+            new Vector3Int(0, 0, 2),
+            new Vector3Int(0, 0, -2)
+        };
+
     [SerializeField] private Material mat;
 
     // Define Size of simulation space
+   
+    [Range(3,70),Tooltip("X size of the simululation field xdddddddd")]
     public int xSize;
+    [Range(3,70),Tooltip("X size of the simululation field xdddddddd")]
     public int ySize;
+    [Range(3,70),Tooltip("X size of the simululation field xdddddddd")]
     public int zSize;
 
     // Start is called before the first frame update
     void Start()
     {
+        Random.seed = 1337;
         print(xSize*ySize*zSize);
         InstantiateArrays();
         cloudCells[xSize/2, ySize/2, zSize/2].act = true; // Cloud seed
-        // foreach (var offset in sixCellNeighberhood)
-        // {
-        //     Debug.Log(offset);
-        // }
-       
+        
     }
 
-    // Update is called once per frame
-
-    private int iteration = 0;
+     //  private int iteration = 0;
     void FixedUpdate()
     {
+        
         Automaton();
         UpdateToNextGen();
-        VizualizeCloudCells();
+        if (vizualize)
+        {
+            VizualizeCloudCells();
+        }
+       
         //Debug.Log("Updated");
-        iteration++;
-        print(iteration);
+       // iteration++;
+        //print(iteration);
 
 
     }
@@ -131,6 +169,7 @@ public class CloudSetup : MonoBehaviour
                     {
                         cube.SetActive(false);
                         meshrenderer.material.color = Color.red;
+                        //meshrenderer.material.color.WithAlpha(Color.red, 100);
                     }
                     else if(cloudCells[x,y,z].act) 
                     {
@@ -153,18 +192,52 @@ public class CloudSetup : MonoBehaviour
     private int GetNeighbours(Vector3Int pos)
     {
         int num = 0 ;
-        foreach(Vector3Int offset in sixCellNeighberhood)
+        if (simulationMethod==_SimulationMethod.SixCell)
         {
-            Vector3Int toLook = new Vector3Int(pos.x + offset.x, pos.y + offset.y,pos.z + offset.z);
-            
-            if (toLook.x >= 0 && toLook.y >= 0 && toLook.z >= 0 && toLook.x <= xSize - 1 && toLook.y <= ySize - 1 && toLook.z <= zSize - 1) // check if you are out of bounds
+            foreach(Vector3Int offset in sixCellNeighborhood)
             {
-                if (cloudCells[toLook.x, toLook.y, toLook.z].act)
+                Vector3Int toLook = new Vector3Int(pos.x + offset.x, pos.y + offset.y,pos.z + offset.z);
+            
+                if (toLook.x >= 0 && toLook.y >= 0 && toLook.z >= 0 && toLook.x <= xSize - 1 && toLook.y <= ySize - 1 && toLook.z <= zSize - 1) // check if you are out of bounds
                 {
-                    num++;
+                    if (cloudCells[toLook.x, toLook.y, toLook.z].act)
+                    {
+                        num++;
+                    }
                 }
             }
         }
+        if (simulationMethod==_SimulationMethod.SevenCell)
+        {
+            foreach(Vector3Int offset in sixCellNeighborhood)
+            {
+                Vector3Int toLook = new Vector3Int(pos.x + offset.x, pos.y + offset.y,pos.z + offset.z);
+            
+                if (toLook.x >= 0 && toLook.y >= 0 && toLook.z >= 0 && toLook.x <= xSize - 1 && toLook.y <= ySize - 1 && toLook.z <= zSize - 1) // check if you are out of bounds
+                {
+                    if (cloudCells[toLook.x, toLook.y, toLook.z].act)
+                    {
+                        num++;
+                    }
+                }
+            }
+        }
+        if (simulationMethod==_SimulationMethod.TenCell)
+        {
+            foreach(Vector3Int offset in sixCellNeighborhood)
+            {
+                Vector3Int toLook = new Vector3Int(pos.x + offset.x, pos.y + offset.y,pos.z + offset.z);
+            
+                if (toLook.x >= 0 && toLook.y >= 0 && toLook.z >= 0 && toLook.x <= xSize - 1 && toLook.y <= ySize - 1 && toLook.z <= zSize - 1) // check if you are out of bounds
+                {
+                    if (cloudCells[toLook.x, toLook.y, toLook.z].act)
+                    {
+                        num++;
+                    }
+                }
+            }
+        }
+
         return num; 
     }
     
@@ -186,7 +259,7 @@ public class CloudSetup : MonoBehaviour
                    
                     CloudCell toMake = new CloudCell();
                         
-                    float rng = Random.Range(0,2);
+                    float rng = Random.value * 2.0f;
                        
                     if (rng<1)
                     {
