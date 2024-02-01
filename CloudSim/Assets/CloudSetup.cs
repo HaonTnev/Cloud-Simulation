@@ -26,6 +26,8 @@ public bool cld;
     {
         public CloudCell[,,] cloudCells;
         public CloudCell[,,] nextGenBuffer;
+        public CloudCell[,,] coxZucker;
+        
 
         public GameObject[,,] cubes; // Just for visualization
 
@@ -78,11 +80,11 @@ public bool cld;
 
     // Define Size of simulation space
    
-    [Range(3,70),Tooltip("X size of the simululation field xdddddddd")]
+    [Range(3,70),Tooltip("Horizontal size of the simulation field.")]
     public int xSize;
-    [Range(3,70),Tooltip("X size of the simululation field xdddddddd")]
+    [Range(3,70),Tooltip("Vertical size of the simulation field.")]
     public int ySize;
-    [Range(3,70),Tooltip("X size of the simululation field xdddddddd")]
+    [Range(3,70),Tooltip("Diagonal size of the simulation field.")]
     public int zSize;
 
     // Start is called before the first frame update
@@ -95,19 +97,21 @@ public bool cld;
         
     }
 
-     //  private int iteration = 0;
+     private int iteration = 0;
     void FixedUpdate()
     {
         
-        Automaton();
-        UpdateToNextGen();
-        if (vizualize)
-        {
-            VizualizeCloudCells();
-        }
-       
+            Automaton();
+            UpdateToNextGen();
+            if (vizualize)
+            {
+                VizualizeCloudCells();
+            }
+            print("updated");
+        
+
         //Debug.Log("Updated");
-       // iteration++;
+       iteration++;
         //print(iteration);
 
 
@@ -115,7 +119,9 @@ public bool cld;
 
     private void UpdateToNextGen()
     {
+        coxZucker = cloudCells;
         cloudCells = nextGenBuffer;
+        nextGenBuffer = coxZucker;
     }
 
     private void Automaton()
@@ -126,10 +132,7 @@ public bool cld;
             {
                 for (int z = 0; z < zSize; z++)
                 {
-                    
-                    var numNeighbors = GetNeighbours(new Vector3Int(x, y, z));
-                   // print(numNeighbors);
-                    if (cloudCells[x, y, z].act == false && cloudCells[x, y, z].hum == true && numNeighbors > 0) // update .act state
+                    if (cloudCells[x, y, z].act == false && cloudCells[x, y, z].hum == true && HasNeighbours(new Vector3Int(x, y, z))) // update .act state
                     {
                         nextGenBuffer[x, y, z].hum = false;
                         nextGenBuffer[x, y, z].act = true;
@@ -162,18 +165,19 @@ public bool cld;
             {
                 for (int z = 0; z < zSize; z++)
                 {
+              
                     GameObject cube = cubes[x, y, z];
                     MeshRenderer meshrenderer = cube.GetComponent<MeshRenderer>();
                     cube.SetActive(false);
                     if (cloudCells[x,y,z].hum)
                     {
                         cube.SetActive(false);
-                        meshrenderer.material.color = Color.red;
-                        //meshrenderer.material.color.WithAlpha(Color.red, 100);
+                        //meshrenderer.material.color = Color.red;
+                        //meshrenderer.material.color.WithAlpha(100);
                     }
-                    else if(cloudCells[x,y,z].act) 
+                    if (cloudCells[x,y,z].act)
                     {
-                       cube.SetActive(true);
+                        cube.SetActive(true);
                         meshrenderer.material.color = Color.green;
                     }
                     else if(cloudCells[x,y,z].cld) 
@@ -189,9 +193,8 @@ public bool cld;
             }
         }
     }
-    private int GetNeighbours(Vector3Int pos)
+    private bool HasNeighbours(Vector3Int pos)
     {
-        int num = 0 ;
         if (simulationMethod==_SimulationMethod.SixCell)
         {
             foreach(Vector3Int offset in sixCellNeighborhood)
@@ -202,14 +205,15 @@ public bool cld;
                 {
                     if (cloudCells[toLook.x, toLook.y, toLook.z].act)
                     {
-                        num++;
+                        
+                        return true;
                     }
                 }
             }
         }
         if (simulationMethod==_SimulationMethod.SevenCell)
         {
-            foreach(Vector3Int offset in sixCellNeighborhood)
+            foreach(Vector3Int offset in sevenCellNeighborhood)
             {
                 Vector3Int toLook = new Vector3Int(pos.x + offset.x, pos.y + offset.y,pos.z + offset.z);
             
@@ -217,7 +221,7 @@ public bool cld;
                 {
                     if (cloudCells[toLook.x, toLook.y, toLook.z].act)
                     {
-                        num++;
+                        return true;
                     }
                 }
             }
@@ -232,13 +236,12 @@ public bool cld;
                 {
                     if (cloudCells[toLook.x, toLook.y, toLook.z].act)
                     {
-                        num++;
+                        return true;
                     }
                 }
             }
         }
-
-        return num; 
+        return false;
     }
     
     private void InstantiateArrays()
@@ -272,7 +275,7 @@ public bool cld;
                     cloudCells[x, y, z] = toMake;
                         
                     GameObject newCube = MakeCube(x,y,z);
-                    cubes[x, y, z] = newCube;
+                   cubes[x, y, z] = newCube;
                 }
             }
         }
