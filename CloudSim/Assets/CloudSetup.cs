@@ -1,4 +1,4 @@
-    using Unity.VisualScripting;
+    using OpenCover.Framework.Model;using Unity.VisualScripting;
     using UnityEditor;
     using UnityEngine;
     using UnityEngine.Rendering;
@@ -14,11 +14,16 @@ This code is mainly composed by stuff I wrote in the former mentioned .comute ap
 */
 
 
-public struct CloudCell
+public class CloudCell
 {
-public bool hum;
-public bool act;
-public bool cld;
+    public bool hum;
+    public bool act;
+    public bool cld;
+
+   public bool Equals(CloudCell other)
+    {
+        return this.cld == other.cld && this.act == other.act && this.hum == other.hum;
+    }
 // no position vector needed. Position is defined by the 3D Array index.
 }
 
@@ -165,7 +170,10 @@ public bool cld;
             {
                 for (int z = 0; z < zSize; z++)
                 {
-              
+                    if (cloudCells[x,y,z].Equals(nextGenBuffer[x,y,z]))
+                    {
+                        continue;
+                    }
                     GameObject cube = cubes[x, y, z];
                     MeshRenderer meshrenderer = cube.GetComponent<MeshRenderer>();
                     cube.SetActive(false);
@@ -273,9 +281,10 @@ public bool cld;
                     toMake.cld = false;
 
                     cloudCells[x, y, z] = toMake;
+                    nextGenBuffer[x, y, z] = new CloudCell();
                         
                     GameObject newCube = MakeCube(x,y,z);
-                   cubes[x, y, z] = newCube;
+                    cubes[x, y, z] = newCube;
                 }
             }
         }
