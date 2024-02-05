@@ -97,6 +97,7 @@ public class CloudCell
     {
         Random.seed = 1337;
         print(xSize*ySize*zSize);
+        SetupSimulationSpace();
         InstantiateArrays();
         cloudCells[xSize/2, ySize/2, zSize/2].act = true; // Cloud seed
         
@@ -170,10 +171,10 @@ public class CloudCell
             {
                 for (int z = 0; z < zSize; z++)
                 {
-                    if (cloudCells[x,y,z].Equals(nextGenBuffer[x,y,z]))
+                    /*if (cloudCells[x,y,z].Equals(nextGenBuffer[x,y,z]))
                     {
                         continue;
-                    }
+                    }*/
                     GameObject cube = cubes[x, y, z];
                     MeshRenderer meshrenderer = cube.GetComponent<MeshRenderer>();
                     cube.SetActive(false);
@@ -282,9 +283,11 @@ public class CloudCell
 
                     cloudCells[x, y, z] = toMake;
                     nextGenBuffer[x, y, z] = new CloudCell();
-                        
-                    GameObject newCube = MakeCube(x,y,z);
-                    cubes[x, y, z] = newCube;
+                    if (vizualize)
+                    {
+                        GameObject newCube = MakeCube(x, y, z);
+                        cubes[x, y, z] = newCube;
+                    }
                 }
             }
         }
@@ -316,7 +319,10 @@ public class CloudCell
         
         return cube;
     }
-    
+    private void SetupSimulationSpace()
+    {
+
+    }
     void OnDrawGizmos()
     {
         Handles.color=Color.red;
