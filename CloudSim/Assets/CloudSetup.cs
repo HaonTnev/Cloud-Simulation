@@ -321,8 +321,6 @@ public class CloudCell
     }
     private void SetupSimulationSpace() // setup the gameObject with correct transforms
     {
-        
-        gameObject.transform.position += new Vector3(xSize/2, ySize/2, zSize/2);
         gameObject.transform.localScale = new Vector3(xSize, ySize, zSize);     
         
     }
