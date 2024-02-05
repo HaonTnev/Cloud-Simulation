@@ -319,16 +319,19 @@ public class CloudCell
         
         return cube;
     }
-    private void SetupSimulationSpace()
+    private void SetupSimulationSpace() // setup the gameObject with correct transforms
     {
-
+        
+        gameObject.transform.position += new Vector3(xSize/2, ySize/2, zSize/2);
+        gameObject.transform.localScale = new Vector3(xSize, ySize, zSize);     
+        
     }
     void OnDrawGizmos()
     {
         Handles.color=Color.red;
         Vector3 bounds = new Vector3(xSize, ySize, zSize);
         var objectpos = gameObject.transform.position;
-        Vector3 center = new Vector3(objectpos.x+(bounds.x/2),objectpos.y+(bounds.y/2), objectpos.z+(bounds.z/2));
+        Vector3 center = new Vector3(objectpos.x,objectpos.y, objectpos.z);
         Handles.DrawWireCube(center, bounds);
             
     }
