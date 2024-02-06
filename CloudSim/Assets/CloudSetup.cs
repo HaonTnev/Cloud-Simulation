@@ -57,7 +57,7 @@ public class CloudCell
             new Vector3Int(0, 0, -1),
         };
 
-        private Vector3Int[] sixCellNeighborhood = //Predefined set off offsets to use in the getNeighbors function
+        private Vector3Int[] sixCellNeighborhood = //Predefined set off offsets to use in the getActiveNeighbors function
         {
             new Vector3Int(1, 0, 0),
             new Vector3Int(-1, 0, 0),
@@ -95,7 +95,7 @@ public class CloudCell
     // Start is called before the first frame update
     void Start()
     {
-        Random.seed = 1337;
+       // Random.seed = 1337;
         print(xSize*ySize*zSize);
         SetupSimulationSpace();
         InstantiateArrays();
@@ -106,21 +106,13 @@ public class CloudCell
      private int iteration = 0;
     void FixedUpdate()
     {
-        
             Automaton();
             UpdateToNextGen();
             if (vizualize)
             {
                 VizualizeCloudCells();
             }
-            print("updated");
-        
-
-        //Debug.Log("Updated");
        iteration++;
-        //print(iteration);
-
-
     }
 
     private void UpdateToNextGen()
@@ -138,7 +130,7 @@ public class CloudCell
             {
                 for (int z = 0; z < zSize; z++)
                 {
-                    if (cloudCells[x, y, z].act == false && cloudCells[x, y, z].hum == true && HasNeighbours(new Vector3Int(x, y, z))) // update .act state
+                    if (cloudCells[x, y, z].act == false && cloudCells[x, y, z].hum == true && HasActiveNeighbours(new Vector3Int(x, y, z))) // update .act state
                     {
                         nextGenBuffer[x, y, z].hum = false;
                         nextGenBuffer[x, y, z].act = true;
@@ -178,11 +170,12 @@ public class CloudCell
                     GameObject cube = cubes[x, y, z];
                     MeshRenderer meshrenderer = cube.GetComponent<MeshRenderer>();
                     cube.SetActive(false);
+                    
                     if (cloudCells[x,y,z].hum)
                     {
-                        cube.SetActive(false);
-                        //meshrenderer.material.color = Color.red;
-                        //meshrenderer.material.color.WithAlpha(100);
+                        cube.SetActive(true);
+                        meshrenderer.material.color = Color.red;
+                        meshrenderer.material.color.WithAlpha(50);
                     }
                     if (cloudCells[x,y,z].act)
                     {
@@ -195,16 +188,15 @@ public class CloudCell
                         meshrenderer.material.color = Color.blue;
                     }
                     
-
                     cube.GetComponent<MeshRenderer>().material.color = meshrenderer.material.color;    
                     cubes[x, y, z] = cube;
                 }
             }
         }
     }
-    private bool HasNeighbours(Vector3Int pos)
+    private bool HasActiveNeighbours(Vector3Int pos)
     {
-        if (simulationMethod==_SimulationMethod.SixCell)
+        if (simulationMethod ==_SimulationMethod.SixCell)
         {
             foreach(Vector3Int offset in sixCellNeighborhood)
             {
@@ -220,13 +212,13 @@ public class CloudCell
                 }
             }
         }
-        if (simulationMethod==_SimulationMethod.SevenCell)
+        if (simulationMethod ==_SimulationMethod.SevenCell)
         {
             foreach(Vector3Int offset in sevenCellNeighborhood)
             {
                 Vector3Int toLook = new Vector3Int(pos.x + offset.x, pos.y + offset.y,pos.z + offset.z);
             
-                if (toLook.x >= 0 && toLook.y >= 0 && toLook.z >= 0 && toLook.x <= xSize - 1 && toLook.y <= ySize - 1 && toLook.z <= zSize - 1) // check if you are out of bounds
+                if (toLook.x >= 0 && toLook.y >= 0 && toLook.z >= 0 && toLook.x <= xSize - 1 && toLook.y <= ySize - 1 && toLook.y <= ySize - 1 && toLook.z <= zSize - 1) // check if you are out of bounds
                 {
                     if (cloudCells[toLook.x, toLook.y, toLook.z].act)
                     {
@@ -235,7 +227,7 @@ public class CloudCell
                 }
             }
         }
-        if (simulationMethod==_SimulationMethod.TenCell)
+        if (simulationMethod ==_SimulationMethod.TenCell)
         {
             foreach(Vector3Int offset in sixCellNeighborhood)
             {
@@ -266,9 +258,8 @@ public class CloudCell
                 for (int z = 0; z < zSize; z++)
                 {
                     // Initially the act & cld fields are empty (false) and only the hum field is occupied (some are true)
-                    // there will be ""Cloud seeds planted in the act field
-             
-                   
+                    // there will be "Cloud" seeds planted in the act field
+                    
                     CloudCell toMake = new CloudCell();
                         
                     float rng = Random.value * 2.0f;
@@ -299,7 +290,7 @@ public class CloudCell
        
         // Set Values of the cube       
         cube.transform.parent = this.gameObject.transform;                       
-        cube.transform.position = new Vector3(x,y,z);
+        cube.transform.position = new Vector3(x-xSize/2,y-ySize/2,z-zSize/2);
         
         //cube.name = new string(x,y,z.ToString());
         
